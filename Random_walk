@@ -1,0 +1,63 @@
+import random
+from numpy import cumsum, array
+
+'''This class file shows the random walk process!'''
+
+class Random_walk_recommendation(object):
+    def __init__(self,graph,random_walk_rounds,reset_pro):
+        self.graph=graph
+        self.random_walk_rounds=random_walk_rounds
+        self.reset_probability=reset_pro
+        self.random_walk_path=[]
+        self.random_walk_paths=[]
+        self.random_walk()
+        
+    def random_walk(self):
+        for node in self.graph.nodes():
+            self.random_walk_path=[]
+            while len(self.random_walk_path)<self.random_walk_rounds:
+                self.random_walk_once(node)
+            self.random_walk_paths.append(self.random_walk_path)
+        return
+    
+    def random_walk_once(self,node):
+        once_random_walk=[node]
+        c = random.uniform(0, 1)
+        while c >self.reset_probability and len(list(self.graph.neighbors(once_random_walk[-1]))) > 0:
+                current_neighbors = list(self.graph.neighbors(once_random_walk[-1]))
+                current_edge_weights = array([self.graph[once_random_walk[-1]][neighbor]['weight'] for neighbor in current_neighbors])
+                cumulated_edge_weights = cumsum(current_edge_weights)
+                if cumulated_edge_weights[-1] == 0:
+                    break
+                random_id = list(cumulated_edge_weights < (random.uniform(0, 1) * cumulated_edge_weights[-1])).index(False)
+                once_random_walk.append(current_neighbors[random_id])#'''add a neighbor'''
+                c = random.uniform(0, 1)
+        self.random_walk_path.append(once_random_walk)
+        return
+        
+    def compute_ranks(self,Free_doctors):
+        """
+        Determines the ranks based the random walks in the list self.random_walk_paths
+        :return: A dictionary of available doctors and corresponding page ranks value"""
+        nodes_in_random_walks=[]
+        visit_times=dict()
+        page_rank_values={}
+        for random_walk_path in self.random_walk_paths:
+            for random_walk in random_walk_path:
+                nodes_in_random_walks.extend(random_walk)
+        for node in Free_doctors:
+            visit_times[node] = nodes_in_random_walks.count(node)
+        for node in Free_doctors:
+            try:
+                page_rank_values[node] = float(visit_times[node]) / sum(visit_times.values())
+            except ZeroDivisionError:
+                print("List of visit times is empty...")
+        return page_rank_values
+    
+    def add_weight_to_edge(self,patient,doctor,weight):
+        if self.graph.has_edge(patient,doctor):
+            self.graph[patient][doctor]['probability'] = weight
+        else:
+            edge = (patient,doctor, weight)
+            self.graph.add_weighted_edges_from([edge])
+        return
