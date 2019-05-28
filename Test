@@ -10,28 +10,25 @@ from scipy import stats
 from Random_walk import Random_walk_recommendation
 
 class Tests(object):
-    '''A test of t'''
+    '''A test of medical system'''
     def page_rank_recommendation(self):
-         self.graph=nx.DiGraph()#生成一个可以空图,可以添加，删除节点，权重，当提供者
-         self.nodes=["A","B","C","D","E","F","G","H","I","J","K","a","b","c","d","e","f","g","h","i","j","k"] #生成11个点，她们可以是信息的推荐者与需求者
-         '''Preset information about all doctors'''
+         self.graph=nx.DiGraph()#Generate a graph
+         self.nodes=["A","B","C","D","E","F","G","H","I","J","K","a","b","c","d","e","f","g","h","i","j","k"] #22 doctors, they act as patient and doctors,  or both at the same time.
+         '''Preset probability about all doctors'''
          self.nodes_description={"Orthopedics":{"A":0.9,"B":0.75,"C":0.6,"a":0.450,"b":0.35,"c":0.25},"Dentistry":{"D":0.5,"E":0.65,"F":0.85,"G":0.95,"d":0.4,"e":0.3,"f":0.2,"g":0.1},"ENT":{"H":0.3,"I":0.5,"J":0.7,"K":0.9,"h":0.7,"i":0.5,"j":0.3,"k":0.1}}
-         self.NNND=["(A,0.9)","(B,0.75)","(C,0.6)","(D,0.5)","(E,0.65)","(F:0.85)","(G,0.95)","(H,0.3)","(I,0.5)","(J,0.7)","(K,0.9)","(a,0.45)","(b,0.35)","(c,0.25)","(d,0.4)","(e,0.3)","(f,0.2)","(g,0.1)","(h,0.7)","(i,0.5)","(j,0.3)","(k,0.1)"]
-         #self.nodes_description={"Orthopedics":{"A":0.80,"B":0.6,"C":0.4},"Dentistry":{"D":0.6,"E":0.7,"F":0.8,"G":0.9},"ENT":{"H":0.3,"I":0.5,"J":0.7,"K":0.9}}
-         #self.nodes_description={"A":0.80,"B":0.25,"C":0.9,"D":0.5,"E":0.7,"F":0.3,"G":0.85,"H":0.60,"I":0.9,"J":0.35,"K":0.5}
-         #self.nodes_Befree={"A":0.20,"B":0.80,"C":0.10,"D":0.9,"E":0.3,"F":0.7,"G":0.15,"H":0.4,"I":0.6,"J":0.85,"K":0.5}
-         self.Roulette=19
          self.nodes_Befree=0.6
-         self.success_times=0
+         self.rl=9 #memory limitation
+         self.Roulette=17 #amount to run roulette wheel algorithm when decision making
+         self.success_times=0 
          self.failure_times=0
          self.success_times1=0
          self.failure_times1=0
-         self.weight=0
          self.success_rate=[]
          self.success_rate1=[]
          self.memories={}         
          self.MEMORIES={} 
-         self.forgetting_factor=0.8
+         self.weight=0
+         self.forgetting_factor=0.6
          self.Total_rounds=300
          self.random_walk_rounds=10 
          self.reset_pro=0.5
@@ -41,7 +38,7 @@ class Tests(object):
          Round=0
          while Round<self.Total_rounds:
              #if Round>500:
-              #  self.nodes_description={"Orthopedics":{"A":0.9,"B":0.75,"C":0.6,"a":0.450,"b":0.35,"c":0.9},"Dentistry":{"D":0.5,"E":0.65,"F":0.85,"G":0.95,"d":0.4,"e":0.3,"f":0.2,"g":0.1},"ENT":{"H":0.3,"I":0.5,"J":0.7,"K":0.9,"h":0.7,"i":0.5,"j":0.3,"k":0.85}}
+             #  self.nodes_description={"Orthopedics":{"A":0.9,"B":0.75,"C":0.6,"a":0.450,"b":0.35,"c":0.9},"Dentistry":{"D":0.5,"E":0.65,"F":0.85,"G":0.95,"d":0.4,"e":0.3,"f":0.2,"g":0.1},"ENT":{"H":0.3,"I":0.5,"J":0.7,"K":0.9,"h":0.7,"i":0.5,"j":0.3,"k":0.85}}
              patient,category,Free_doctors,Doctor=self.needs_doctors()
              if Doctor==None:
                  self.failure_times+=1
@@ -50,11 +47,8 @@ class Tests(object):
              self.graph.add_weighted_edges_from([(patient,Doctor,self.weight)])
              Round+=1
              self.success_rate.append(self.success_times/(self.success_times+self.failure_times))
-             #print("成功率",self.success_times/(self.success_times+self.failure_times))
-             #print("成功率2",self.success_times1/(self.success_times1+self.failure_times1))
-         #print("记忆总数",self.MEMORIES)
-         #print("用于更新网络的记忆",self.memories)
-         """用于处理数据""" 
+
+         """data analysis""" 
          TTT={}
          for node1 in self.nodes:
              TTT[node1]=0
@@ -62,8 +56,8 @@ class Tests(object):
                  for node3 in self.MEMORIES[node2]:
                      if node3==node1:
                          TTT[node1]+=self.MEMORIES[node2][node3]
-         print("统计：",TTT)#表示所有医生提供服务的次数
-         #Figure1: Success rate comparison
+
+         #Figure1: Success rate comparison with or without adopting the concept of TRUST;
          fig1=plt.figure()
          left, bottom, width, height = -0.5,0.5,1,1
          ax1 = fig1.add_axes([left,bottom,width,height])
@@ -79,18 +73,18 @@ class Tests(object):
                 f.write(str(word))'''
              f.write(str(self.success_rate[-1]))
              f.write('\n')
-             f.write(">>>>>>>>分隔符<<<<<<<<<<<<<<<<")
+             f.write(">>>>>>>>RONUND<<<<<<<<<<<<<<<<")
              f.write('\n')
              f.close()
          
     def needs_doctors(self):
-        '''this function explains who need a doctor: ##patiend
-        what kind of doctor the patient needs?: ##three different kinds
-        among all the professional doctors, who are available/free
-        Finally, patient chooses a doctor'''
+        '''this function explains who need a doctor: ##patient; What kind of doctor the patient needs?: ##three different kinds
+        among all the professional doctors; who are available/free. Finally, patient chooses a doctor'''
+        
         patient=random.choice(self.nodes) #who needs a doctor
         category=random.choice(list(self.nodes_description.keys())) #what kind of doctor it needs
         Free_doctors=[doctor for doctor in self.nodes_description[category] if random.random()<self.nodes_Befree and doctor!=patient] #doctors who are free
+        
         '''randomly choose a doctor in all the available ones'''
         if len(Free_doctors)==0:
             self.failure_times1+=1
@@ -102,12 +96,13 @@ class Tests(object):
             else:
                 self.failure_times1+=1
         self.success_rate1.append(self.success_times1/(self.success_times1+self.failure_times1))#claculate success rate
-        '''Select one doctor by utilizing Monte Carlo method and Random walk algorithm, firstly add it to the graph if not exist'''
+        
+        '''Select one doctor by utilizing PROPOSED MEDEL, firstly add it to the graph if not exist'''
         Not_exist_node=[node for node in Free_doctors if node not in self.graph.nodes()]
         self.graph.add_nodes_from(Not_exist_node)   
-        '''adopting Monte Carlo and random algorithm to choose one doctor'''
         Doctor=self.choose_a_doctor(patient,category,Free_doctors)
-        '''self.MEMORIES用于记录每两个节点交互了多少次，A找了B总共多少次'''
+        
+        '''self.MEMORIES is used to record the accumulated amount that doctor provided service to the patient;'''
         if Doctor!=None:
             try:
                 self.MEMORIES[patient][Doctor]+=1
@@ -117,18 +112,14 @@ class Tests(object):
         
     
     def choose_a_doctor(self,patient,category,Free_doctors):
-        '''Here the patient selects the most reliable doctor based on its historical interactors!
-        as a result, patient ranks all the doctors
-        then the interactions between patients are adopted as the input, however, even we 
-        know the recommendation of the exact doctor, we are not familar with the patient
-        Therefore, we use monte carlo PageRank algorithm!
-        Remember the selected nodes, the results for the next recommendation'''
+        '''Here the patient selects the most reliable doctor based on its historical interactors! As a result, patient ranks all the doctors
+        then the interactions between patients are adopted as the input, however, even we know the recommendation of the exact doctor, we are not familar with the patient
+        Therefore, we use monte carlo PageRank algorithm! Remember the selected nodes, the results for the next recommendation'''
+       
         WalkerPR=Random_walk_recommendation(self.graph, self.random_walk_rounds, self.reset_pro)
         page_rank_values=WalkerPR.compute_ranks(Free_doctors)
         cumulated_value=array([page_rank_values[value] for value in page_rank_values])  
         cumulated_values=cumsum(cumulated_value)
-        #selected_id = list(cumulated_values < (random.uniform(0, 1) * cumulated_values[-1])).index(False)
-        #node=list(page_rank_values.keys())[selected_id]
         if len(page_rank_values)==0:
             Node=None
         else:
@@ -143,7 +134,8 @@ class Tests(object):
         return Node
     
     def update_memories(self,patient,category,Doctor):
-        "update the historical interaction, everyone only remembers the recenet 10 interction."
+        '''update the historical interaction, everyone only remembers the recenet 10 interction.'''
+       
         update_interactions={}
         c = random.uniform(0, 1)
         if c<self.nodes_description[category][Doctor]:
@@ -153,16 +145,15 @@ class Tests(object):
             update_interactions[1]="Failure"
             self.failure_times+=1
         try:
-            History=self.memories[patient][Doctor] #首先更新已经有了的记忆,往后挪一位
+            History=self.memories[patient][Doctor] # Memories grow elder;
             del self.memories[patient][Doctor]
             for time in History:
-                if time<=9:
+                if time<=self.rl:
                     update_interactions[time+1]=History[time]  
             self.memories[patient][Doctor]=update_interactions
         except KeyError:
             self.memories.setdefault(patient,{})[Doctor]=update_interactions
         self.calculate_weight(update_interactions)
-        #print("更新记忆",self.memories)
         return 
     
     def calculate_weight(self,interactions):
@@ -175,6 +166,4 @@ class Tests(object):
         self.weight=success_score_sum/(success_score_sum+failure_score_sum)
         return 
         
-one=Tests()
-one.page_rank_recommendation()
     
