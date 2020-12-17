@@ -30,6 +30,6 @@ The proposed model is applied to the field of medical recommender system. In the
 
 First, we ran a test to show that the concept of trust makes great sense in improving the preformances of the recommender system. Then we analyzed the effect the some preset probability, including forgetting factor, the reset probability in random walk process and the amount to use roulette wheel aggorithm when making decisions. Finally, the coherence between the total number of providing treatments and the preset probability is tested. Because of randomness when providing services, each test has been ran for 10 times and the average result is shown in the result comprison. In the example, the effectiveness of adopting the concept of trust in recommender system is shown.
 
- [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cristal-smac/recommender.git/master?filepath=recommender.ipynb)
+ [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cristal-smac/recommender.git/master?filepath=SimulateDirectTrust.ipynb)
 
 
